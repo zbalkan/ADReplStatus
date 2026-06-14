@@ -154,34 +154,23 @@ namespace ADReplStatus
                 {
                     if (gLoggingEnabled)
                     {
-                        System.IO.File.AppendAllText(gLogfileName, $"[{DateTime.Now}] Attempting forest discovery against user specified domain controller {gUserDomainController}\n");
+                        System.IO.File.AppendAllText(gLogfileName, $"[{DateTime.Now}] Attempting forest discovery via user specified domain controller {gUserDomainController}\n");
                     }
 
-                    DirectoryEntry entry = null;
+                    DirectoryContext dcContext;
                     if (gUsername.Length > 0)
                     {
-                        backgroundWorker1.ReportProgress(0, $"Attempting to connect to forest {gForestName} with alternate user {gUsername}.");
-
-                        entry = new DirectoryEntry($"LDAP://{gUserDomainController}/RootDSE", gUsername, gPassword);
-
-                        //Issues a check and throws an exception if the user specified DC does not exist. 
-                        var configNamingContext = entry.Properties["configurationNamingContext"].Value;
-
-                        ForestContext = new DirectoryContext(DirectoryContextType.Forest, gForestName, gUsername, gPassword);
+                        backgroundWorker1.ReportProgress(0, $"Attempting to connect to {gUserDomainController} with alternate user {gUsername}.");
+                        dcContext = new DirectoryContext(DirectoryContextType.DirectoryServer, gUserDomainController, gUsername, gPassword);
                     }
                     else
                     {
-                        backgroundWorker1.ReportProgress(0, $"Attempting to connect to forest {gForestName} as currently logged-on user.");
-
-                        entry = new DirectoryEntry($"LDAP://{gUserDomainController}/RootDSE");
-
-                        //Issues a check and throws an exception if the user specified DC does not exist. 
-                        var configNamingContext = entry.Properties["configurationNamingContext"].Value;
-
-                        ForestContext = new DirectoryContext(DirectoryContextType.Forest, gForestName);
+                        backgroundWorker1.ReportProgress(0, $"Attempting to connect to {gUserDomainController} as currently logged-on user.");
+                        dcContext = new DirectoryContext(DirectoryContextType.DirectoryServer, gUserDomainController);
                     }
 
-                    forest = Forest.GetForest(ForestContext);
+                    DomainController domainController = DomainController.GetDomainController(dcContext);
+                    forest = domainController.Forest;
                 }
                 else
                 {
