@@ -64,14 +64,23 @@ namespace ADReplStatus
 
         private void SetUserDomainControllerForm_Load(object sender, EventArgs e)
         {
-            if (ADReplStatusForm.gUseUserDomainController)
+            if (ADReplStatusForm.gDarkMode)
             {
-                SetUserDomainControllerTextBox.Text = ADReplStatusForm.gUserDomainController;
+                this.BackColor = Color.FromArgb(32, 32, 32);
+
+                SetUserDomainControllerLabel.BackColor = Color.FromArgb(32, 32, 32);
+                SetUserDomainControllerLabel.ForeColor = Color.White;
+
+                SetUserDomainControllerTextBox.BackColor = Color.FromArgb(32, 32, 32);
+                SetUserDomainControllerTextBox.ForeColor = Color.White;
+
+                SetUserDomainControllerButton.BackColor = Color.FromArgb(32, 32, 32);
+                SetUserDomainControllerButton.ForeColor = Color.White;
             }
-            else
-            {
-                SetUserDomainControllerTextBox.Text = string.Empty;
-            }
+
+            SetUserDomainControllerTextBox.Text = ADReplStatusForm.gUseUserDomainController
+                ? ADReplStatusForm.gUserDomainController
+                : string.Empty;
         }
 
         private void SetUserDomainControllerTextBox_KeyDown(object sender, KeyEventArgs e)
