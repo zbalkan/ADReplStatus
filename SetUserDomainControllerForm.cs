@@ -19,11 +19,10 @@ namespace ADReplStatus
 
         private void SetForestNameButton_Click(object sender, EventArgs e)
         {
-
             if (ADReplStatusForm.gUseUserDomainController)
             {
                 //The user cleared out the input box and clicked set
-                if(SetUserDomainControllerTextBox.Text.Length < 1)
+                if (SetUserDomainControllerTextBox.Text.Length < 1)
                 {
                     if (ADReplStatusForm.gLoggingEnabled)
                     {
@@ -31,6 +30,7 @@ namespace ADReplStatus
                     }
 
                     ADReplStatusForm.gUseUserDomainController = false;
+                    ADReplStatusForm.gUserDomainController = string.Empty;
                 }
                 else
                 {
@@ -42,7 +42,12 @@ namespace ADReplStatus
                     ADReplStatusForm.gUserDomainController = SetUserDomainControllerTextBox.Text;
                 }
 
-                this.Dispose();
+                this.Close();
+                return;
+            }
+
+            if (SetUserDomainControllerTextBox.Text.Length < 1)
+            {
                 return;
             }
 
@@ -54,13 +59,12 @@ namespace ADReplStatus
             ADReplStatusForm.gUseUserDomainController = true;
             ADReplStatusForm.gUserDomainController = SetUserDomainControllerTextBox.Text;
 
-            this.Dispose();
-            return;
+            this.Close();
         }
 
         private void SetUserDomainControllerForm_Load(object sender, EventArgs e)
         {
-            if(ADReplStatusForm.gUseUserDomainController)
+            if (ADReplStatusForm.gUseUserDomainController)
             {
                 SetUserDomainControllerTextBox.Text = ADReplStatusForm.gUserDomainController;
             }
@@ -74,7 +78,7 @@ namespace ADReplStatus
         {
             if (e.KeyCode == Keys.Enter)
             {
-                SetForestNameButton_Click(this, new EventArgs());
+                SetForestNameButton_Click(this, EventArgs.Empty);
             }
         }
     }
