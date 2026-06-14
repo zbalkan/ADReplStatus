@@ -45,7 +45,7 @@ namespace ADReplStatus
         public static string gUserDomainController = string.Empty;
 
         public static List<ADREPLDC> gDCs = new List<ADREPLDC>();
-        
+
         public ADReplStatusForm()
         {
             InitializeComponent();
@@ -60,7 +60,7 @@ namespace ADReplStatus
             ActiveForm.Text = $"AD Replication Status Tool - {gForestName}";
 
             gDCs.Clear();
-            
+
 
             foreach (var control in this.Controls)
             {
@@ -92,7 +92,7 @@ namespace ADReplStatus
                     if (key != null)
                     {
                         gForestName = key.GetValue("ForestName", string.Empty).ToString();
-                        
+
                         gDarkMode = Convert.ToBoolean(key.GetValue("DarkMode", false));
                     }
                 }
@@ -104,7 +104,7 @@ namespace ADReplStatus
 
             if (gDarkMode == true)
             {
-                SetDarkMode();                
+                SetDarkMode();
             }
             else
             {
@@ -125,11 +125,11 @@ namespace ADReplStatus
                 {
                     MessageBox.Show("Unable to detect AD forest. You will need to manually enter the AD forest you wish to scan using the 'Manually Set Forest' button.\nThis happens on non-domain joined computers as well as hybrid or Azure AD domain-joined machines.", "Forest Not Found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
-            }            
+            }
         }
 
         private void ADReplStatusForm_Resize(object sender, EventArgs e)
-        {            
+        {
             treeListView1.Top = 68;
 
             treeListView1.Left = 12;
@@ -150,11 +150,11 @@ namespace ADReplStatus
             {
                 DirectoryContext ForestContext = null;
 
-                if(gUseUserDomainController)
+                if (gUseUserDomainController)
                 {
                     if (gLoggingEnabled)
                     {
-                       System.IO.File.AppendAllText(gLogfileName, $"[{DateTime.Now}] Attempting forest discovery against user specified domain controller {gUserDomainController}\n");
+                        System.IO.File.AppendAllText(gLogfileName, $"[{DateTime.Now}] Attempting forest discovery against user specified domain controller {gUserDomainController}\n");
                     }
 
                     DirectoryEntry entry = null;
@@ -199,11 +199,11 @@ namespace ADReplStatus
                     }
 
                     forest = Forest.GetForest(ForestContext);
-                }            
+                }
             }
             catch (Exception ex)
             {
-                if(gUseUserDomainController)
+                if (gUseUserDomainController)
                 {
                     backgroundWorker1.ReportProgress(0, $"ERROR:Unable to find AD forest:{gForestName}\nUsing user specified target domain controller:{gUserDomainController}\n{ex.Message}\n");
                 }
@@ -229,19 +229,19 @@ namespace ADReplStatus
 
             foreach (Domain domain in domainCollection)
             {
-                DomainControllerCollection DCs = domain.DomainControllers;                
+                DomainControllerCollection DCs = domain.DomainControllers;
 
                 foreach (DomainController dc in DCs)
-                {                    
+                {
                     ADREPLDC adrepldc = new ADREPLDC();
-                    
+
                     adrepldc.Name = dc.Name;
 
                     adrepldc.DomainName = domain.Name;
 
                     try
                     {
-                        adrepldc.Site = dc.SiteName;                        
+                        adrepldc.Site = dc.SiteName;
                     }
                     catch (Exception ex)
                     {
@@ -254,7 +254,7 @@ namespace ADReplStatus
 
                     try
                     {
-                        adrepldc.IsGC = dc.IsGlobalCatalog().ToString();                        
+                        adrepldc.IsGC = dc.IsGlobalCatalog().ToString();
                     }
                     catch (Exception ex)
                     {
@@ -293,7 +293,7 @@ namespace ADReplStatus
                                     adrepldc.IsRODC = "False";
                                 }
                             }
-                        }                        
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -320,7 +320,7 @@ namespace ADReplStatus
                             adrepldc.DiscoveryIssues = true;
                         }
                     }
-                    
+
                     gDCs.Add(adrepldc);
 
                     CurrentDC++;
@@ -329,11 +329,13 @@ namespace ADReplStatus
                 }
             }
 
-            
 
-            treeListView1.SetObjects(gDCs);
 
-            treeListView1.CanExpandGetter = delegate (object x) 
+        }
+
+        private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            treeListView1.CanExpandGetter = delegate (object x)
             {
                 return (x is ADREPLDC);
             };
@@ -342,11 +344,10 @@ namespace ADReplStatus
             {
                 return ((ADREPLDC)x).ReplicationPartners;
             };
-        }
 
-        private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            ProgressPercentLabel.Visible = false;            
+            treeListView1.SetObjects(gDCs);
+
+            ProgressPercentLabel.Visible = false;
 
             foreach (var control in this.Controls)
             {
@@ -452,7 +453,7 @@ namespace ADReplStatus
                     if (gDarkMode == true)
                     {
                         e.Item.ForeColor = Color.White;
-                    }                    
+                    }
                 }
             }
             else if (e.Model is ReplicationNeighbor)
@@ -487,7 +488,7 @@ namespace ADReplStatus
 
                 treeListView1.ExpandAll();
 
-                treeListView1.ModelFilter = new ModelFilter(delegate (object x) 
+                treeListView1.ModelFilter = new ModelFilter(delegate (object x)
                 {
                     if (x is ADREPLDC)
                     {
@@ -495,10 +496,10 @@ namespace ADReplStatus
                     }
                     else if (x is ReplicationNeighbor)
                     {
-                        return (((ReplicationNeighbor)x).ConsecutiveFailureCount > 0);                        
+                        return (((ReplicationNeighbor)x).ConsecutiveFailureCount > 0);
                     }
 
-                    return false;            
+                    return false;
                 });
             }
             else
@@ -566,7 +567,7 @@ namespace ADReplStatus
 
         private void diagnosticMenuSelector(object sender, ToolStripItemClickedEventArgs e)
         {
-            switch(e.ClickedItem.ToString())
+            switch (e.ClickedItem.ToString())
             {
                 case "Ping":
                     if (ADReplStatusForm.gLoggingEnabled)
@@ -576,7 +577,7 @@ namespace ADReplStatus
                     diagnosticPing(sender, e);
                     break;
                 case "Initiate RDP connection":
-                    diagnosticRdp(sender,e);
+                    diagnosticRdp(sender, e);
                     break;
                 case "Enter PowerShell session":
                     diagnosticPSSession(sender, e);
@@ -738,7 +739,7 @@ namespace ADReplStatus
                 string args = $"/v {this.treeListView1.SelectedItem.Text}";
                 Process.Start($"mstsc.exe", args);
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 string errorMessage = $"ERROR: RDP to {this.treeListView1.SelectedItem.Text} failed!\n{ex.Message}\n";
 
@@ -753,7 +754,7 @@ namespace ADReplStatus
 
         private void diagnosticPSSession(object sender, ToolStripItemClickedEventArgs e)
         {
-            
+
             try
             {
                 if (ADReplStatusForm.gLoggingEnabled)
@@ -798,7 +799,7 @@ namespace ADReplStatus
 
             if (gDarkMode == true)
             {
-                SetDarkMode();              
+                SetDarkMode();
             }
             else
             {
@@ -847,7 +848,7 @@ namespace ADReplStatus
                 if (control is Button)
                 {
                     ((Button)control).BackColor = Color.FromArgb(32, 32, 32);
-                }                
+                }
 
                 if (control is Label)
                 {
@@ -956,7 +957,6 @@ namespace ADReplStatus
         public string IsRODC;
 
         public List<ReplicationNeighbor> ReplicationPartners = new List<ReplicationNeighbor>();
-    }    
+    }
 
 }
-
