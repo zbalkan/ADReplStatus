@@ -41,8 +41,8 @@ namespace ADReplStatus
         public static string gTarget = string.Empty;
 
         //Added to allow user controlled DC selection
-        public static bool gUseUserDomainController = false;
-        public static string gUserDomainController = string.Empty;
+        public static volatile bool gUseUserDomainController = false;
+        public static volatile string gUserDomainController = string.Empty;
 
         public static List<ADREPLDC> gDCs = new List<ADREPLDC>();
 
