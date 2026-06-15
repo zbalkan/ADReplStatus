@@ -313,6 +313,55 @@ namespace ADReplStatus
 
             treeListView1.ChildrenGetter = x => ((ADREPLDC)x).ReplicationPartners;
 
+            DCNameColumn.AspectGetter = x =>
+            {
+                switch (x) { case ADREPLDC dc: return dc.Name; case ReplicationNeighbor n: return n.SourceServer; default: return null; }
+            };
+            DomainNameColumn.AspectGetter = x =>
+            {
+                switch (x) { case ADREPLDC dc: return dc.DomainName; default: return null; }
+            };
+            SiteColumn.AspectGetter = x =>
+            {
+                switch (x) { case ADREPLDC dc: return dc.Site; default: return null; }
+            };
+            DiscoveryIssuesColumn.AspectGetter = x =>
+            {
+                switch (x) { case ADREPLDC dc: return dc.DiscoveryIssues; default: return null; }
+            };
+            IsGCColumn.AspectGetter = x =>
+            {
+                switch (x) { case ADREPLDC dc: return dc.IsGC; default: return null; }
+            };
+            IsRODCColumn.AspectGetter = x =>
+            {
+                switch (x) { case ADREPLDC dc: return dc.IsRODC; default: return null; }
+            };
+            SourceServerColumn.AspectGetter = x =>
+            {
+                switch (x) { case ReplicationNeighbor n: return n.SourceServer; default: return null; }
+            };
+            PartitionNameColumn.AspectGetter = x =>
+            {
+                switch (x) { case ReplicationNeighbor n: return n.PartitionName; default: return null; }
+            };
+            ConsecutiveFailureCountColumn.AspectGetter = x =>
+            {
+                switch (x) { case ReplicationNeighbor n: return n.ConsecutiveFailureCount; default: return null; }
+            };
+            LastSuccessfulSyncColumn.AspectGetter = x =>
+            {
+                switch (x) { case ReplicationNeighbor n: return n.LastSuccessfulSync; default: return null; }
+            };
+            LastSyncResultColumn.AspectGetter = x =>
+            {
+                switch (x) { case ReplicationNeighbor n: return n.LastSyncResult; default: return null; }
+            };
+            LastSyncMessageColumn.AspectGetter = x =>
+            {
+                switch (x) { case ReplicationNeighbor n: return n.LastSyncMessage; default: return null; }
+            };
+
             treeListView1.SetObjects(gDCs);
 
             ProgressPercentLabel.Visible = false;
