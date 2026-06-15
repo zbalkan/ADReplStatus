@@ -221,6 +221,23 @@ namespace ADReplStatus
                         DomainName = domainName
                     };
 
+                    if (!IsDCReachable(dc.Name))
+                    {
+                        backgroundWorker1.ReportProgress(0, $"DC {adrepldc.Name} is unreachable (TCP port 389 check failed).");
+
+                        adrepldc.Site = "Unknown";
+                        adrepldc.IsGC = "Unknown";
+                        adrepldc.IsRODC = "Unknown";
+                        adrepldc.DiscoveryIssues = true;
+
+                        results.Add(adrepldc);
+
+                        int skipped = Interlocked.Increment(ref completedDCs);
+                        int skipPercent = (int)((float)skipped / (float)NumDCs * 100);
+                        backgroundWorker1.ReportProgress(skipPercent, "UPDATEPERCENT");
+                        return;
+                    }
+
                     try
                     {
                         adrepldc.Site = dc.SiteName;
@@ -234,49 +251,63 @@ namespace ADReplStatus
                         adrepldc.DiscoveryIssues = true;
                     }
 
-                    try
+                    if (!adrepldc.DiscoveryIssues)
                     {
-                        adrepldc.IsGC = dc.IsGlobalCatalog().ToString();
-                    }
-                    catch (Exception ex)
-                    {
-                        backgroundWorker1.ReportProgress(0, $"Failed to contact DC {adrepldc.Name} and determine global catalog status:{ex.Message}");
-
-                        adrepldc.IsGC = "Unknown";
-
-                        adrepldc.DiscoveryIssues = true;
-                    }
-
-                    try
-                    {
-                        using (DirectoryEntry directoryEntry = new DirectoryEntry("LDAP://" + dc.Name))
+                        try
                         {
-                            using (DirectorySearcher search = new DirectorySearcher(directoryEntry))
-                            {
-                                search.ClientTimeout = new TimeSpan(0, 0, 20);
+                            adrepldc.IsGC = dc.IsGlobalCatalog().ToString();
+                        }
+                        catch (Exception ex)
+                        {
+                            backgroundWorker1.ReportProgress(0, $"Failed to contact DC {adrepldc.Name} and determine global catalog status:{ex.Message}");
 
-                                search.Filter = $"(samaccountname={dc.Name.Split('.')[0]}$)";
+                            adrepldc.IsGC = "Unknown";
 
-                                search.PropertiesToLoad.Add("msDS-isRODC");
-
-                                SearchResult result = search.FindOne();
-
-                                if (result == null || result.Properties["msDS-isRODC"].Count == 0)
-                                {
-                                    throw new Exception("msDS-isRODC attribute not found!");
-                                }
-
-                                adrepldc.IsRODC = ((bool)result.Properties["msDS-isRODC"][0]).ToString();
-                            }
+                            adrepldc.DiscoveryIssues = true;
                         }
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        backgroundWorker1.ReportProgress(0, $"Failed to determine RODC status for {dc.Name}:{ex.Message}");
+                        adrepldc.IsGC = "Unknown";
+                    }
 
+                    if (!adrepldc.DiscoveryIssues)
+                    {
+                        try
+                        {
+                            using (DirectoryEntry directoryEntry = new DirectoryEntry("LDAP://" + dc.Name))
+                            {
+                                using (DirectorySearcher search = new DirectorySearcher(directoryEntry))
+                                {
+                                    search.ClientTimeout = new TimeSpan(0, 0, 5);
+
+                                    search.Filter = $"(samaccountname={dc.Name.Split('.')[0]}$)";
+
+                                    search.PropertiesToLoad.Add("msDS-isRODC");
+
+                                    SearchResult result = search.FindOne();
+
+                                    if (result == null || result.Properties["msDS-isRODC"].Count == 0)
+                                    {
+                                        throw new Exception("msDS-isRODC attribute not found!");
+                                    }
+
+                                    adrepldc.IsRODC = ((bool)result.Properties["msDS-isRODC"][0]).ToString();
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            backgroundWorker1.ReportProgress(0, $"Failed to determine RODC status for {dc.Name}:{ex.Message}");
+
+                            adrepldc.IsRODC = "Unknown";
+
+                            adrepldc.DiscoveryIssues = true;
+                        }
+                    }
+                    else
+                    {
                         adrepldc.IsRODC = "Unknown";
-
-                        adrepldc.DiscoveryIssues = true;
                     }
 
                     if (!adrepldc.DiscoveryIssues)
@@ -893,6 +924,30 @@ namespace ADReplStatus
                 headerstyle.SetForeColor(SystemColors.ControlText);
 
                 item.HeaderFormatStyle = headerstyle;
+            }
+        }
+
+        private static readonly int ReachabilityTimeoutMs = 3000;
+
+        private static bool IsDCReachable(string hostname, int port = 389)
+        {
+            try
+            {
+                using (var client = new TcpClient())
+                {
+                    var result = client.BeginConnect(hostname, port, null, null);
+                    bool connected = result.AsyncWaitHandle.WaitOne(ReachabilityTimeoutMs);
+                    if (connected)
+                    {
+                        client.EndConnect(result);
+                        return true;
+                    }
+                    return false;
+                }
+            }
+            catch
+            {
+                return false;
             }
         }
 
