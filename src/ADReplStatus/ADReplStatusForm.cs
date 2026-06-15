@@ -55,7 +55,7 @@ namespace ADReplStatus
 
             ProgressPercentLabel.Text = "0%";
 
-            ActiveForm.Text = $"AD Replication Status Tool - {gForestName}";
+            Text = $"AD Replication Status Tool - {gForestName}";
 
             gDCs.Clear();
 
@@ -127,15 +127,9 @@ namespace ADReplStatus
         private void ADReplStatusForm_Resize(object sender, EventArgs e)
         {
             treeListView1.Top = 68;
-
             treeListView1.Left = 12;
-
-            if (ActiveForm != null)
-            {
-                treeListView1.Width = ActiveForm.Width - 40;
-
-                treeListView1.Height = ActiveForm.Height - 119;
-            }
+            treeListView1.Width = Width - 40;
+            treeListView1.Height = Height - 119;
         }
 
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
