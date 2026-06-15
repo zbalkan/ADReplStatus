@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Net.Sockets;
 using System.Threading;
@@ -15,7 +15,7 @@ namespace ADReplStatus
         public PortTester()
         {
             InitializeComponent();
-            target_txtbox.Text = $"{ADReplStatusForm.gTarget}";
+            target_txtbox.Text = $"{AppState.Instance.Target}";
             portProtocolList();
         }
 
@@ -71,7 +71,6 @@ namespace ADReplStatus
             }
             catch
             {
-                //Do nothing, the exception should've already been caught in testNetConnection
             }
         }
 
@@ -93,10 +92,7 @@ namespace ADReplStatus
                 results_txtbox.AppendText($"Testing TCP connection to {target} on port {port}:{Environment.NewLine}");
                 await client.ConnectAsync(target, port);
 
-                if (ADReplStatusForm.gLoggingEnabled)
-                {
-                    System.IO.File.AppendAllText(ADReplStatusForm.gLogfileName, $"[{DateTime.Now}] Connection to {target} was successful on {port}{Environment.NewLine}");
-                }
+                Logger.Log($"Connection to {target} was successful on {port}");
 
                 string successMessage = $"Connection successful! {Environment.NewLine}===========================";
                 results_txtbox.AppendText(successMessage);
@@ -110,10 +106,7 @@ namespace ADReplStatus
                 string errorMessage = $"ERROR: Connection to {target} using port {port} failed!{Environment.NewLine}{Environment.NewLine}{ex.Message}{Environment.NewLine}";
                 results_txtbox.AppendText($"{Environment.NewLine}{errorMessage}{Environment.NewLine}");
 
-                if (ADReplStatusForm.gLoggingEnabled)
-                {
-                    System.IO.File.AppendAllText(ADReplStatusForm.gLogfileName, $"[{DateTime.Now}] {errorMessage}\n");
-                }
+                Logger.Log(errorMessage);
             }
         }
 
@@ -231,7 +224,7 @@ namespace ADReplStatus
 
         private void PortTester_Load(object sender, EventArgs e)
         {
-            if (ADReplStatusForm.gDarkMode)
+            if (AppState.Instance.DarkMode)
             {
                 BackColor = Color.FromArgb(32, 32, 32);
 
@@ -241,37 +234,31 @@ namespace ADReplStatus
                     {
                         case Label _:
                             ((Label)control).BackColor = Color.FromArgb(32, 32, 32);
-
                             ((Label)control).ForeColor = Color.White;
                             break;
 
                         case TextBox _:
                             ((TextBox)control).BackColor = Color.FromArgb(32, 32, 32);
-
                             ((TextBox)control).ForeColor = Color.White;
                             break;
 
                         case Button _:
                             ((Button)control).BackColor = Color.FromArgb(32, 32, 32);
-
                             ((Button)control).ForeColor = Color.White;
                             break;
 
                         case CheckBox _:
                             ((CheckBox)control).BackColor = Color.FromArgb(32, 32, 32);
-
                             ((CheckBox)control).ForeColor = Color.White;
                             break;
 
                         case RadioButton _:
                             ((RadioButton)control).BackColor = Color.FromArgb(32, 32, 32);
-
                             ((RadioButton)control).ForeColor = Color.White;
                             break;
 
                         case ListBox _:
                             ((ListBox)control).BackColor = Color.FromArgb(32, 32, 32);
-
                             ((ListBox)control).ForeColor = Color.White;
                             break;
                     }

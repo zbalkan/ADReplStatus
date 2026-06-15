@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -13,27 +13,22 @@ namespace ADReplStatus
 
         private void SetForestNameButton_Click(object sender, EventArgs e)
         {
-            if (ADReplStatusForm.gUseUserDomainController)
+            var state = AppState.Instance;
+
+            if (state.UseUserDomainController)
             {
-                //The user cleared out the input box and clicked set
                 if (SetUserDomainControllerTextBox.Text.Length < 1)
                 {
-                    if (ADReplStatusForm.gLoggingEnabled)
-                    {
-                        System.IO.File.AppendAllText(ADReplStatusForm.gLogfileName, $"[{DateTime.Now}] Clearing user specified domain controller and disabling global. Previous value:{ADReplStatusForm.gUserDomainController}\n");
-                    }
+                    Logger.Log($"Clearing user specified domain controller and disabling global. Previous value:{state.UserDomainController}");
 
-                    ADReplStatusForm.gUseUserDomainController = false;
-                    ADReplStatusForm.gUserDomainController = string.Empty;
+                    state.UseUserDomainController = false;
+                    state.UserDomainController = string.Empty;
                 }
                 else
                 {
-                    if (ADReplStatusForm.gLoggingEnabled)
-                    {
-                        System.IO.File.AppendAllText(ADReplStatusForm.gLogfileName, $"[{DateTime.Now}] Changing user specified domain controller to {SetUserDomainControllerTextBox.Text}\n");
-                    }
+                    Logger.Log($"Changing user specified domain controller to {SetUserDomainControllerTextBox.Text}");
 
-                    ADReplStatusForm.gUserDomainController = SetUserDomainControllerTextBox.Text;
+                    state.UserDomainController = SetUserDomainControllerTextBox.Text;
                 }
 
                 Close();
@@ -45,20 +40,19 @@ namespace ADReplStatus
                 return;
             }
 
-            if (ADReplStatusForm.gLoggingEnabled)
-            {
-                System.IO.File.AppendAllText(ADReplStatusForm.gLogfileName, $"[{DateTime.Now}] Setting user specified domain controller to {SetUserDomainControllerTextBox.Text} and enabling global.\n");
-            }
+            Logger.Log($"Setting user specified domain controller to {SetUserDomainControllerTextBox.Text} and enabling global.");
 
-            ADReplStatusForm.gUseUserDomainController = true;
-            ADReplStatusForm.gUserDomainController = SetUserDomainControllerTextBox.Text;
+            state.UseUserDomainController = true;
+            state.UserDomainController = SetUserDomainControllerTextBox.Text;
 
             Close();
         }
 
         private void SetUserDomainControllerForm_Load(object sender, EventArgs e)
         {
-            if (ADReplStatusForm.gDarkMode)
+            var state = AppState.Instance;
+
+            if (state.DarkMode)
             {
                 BackColor = Color.FromArgb(32, 32, 32);
 
@@ -72,8 +66,8 @@ namespace ADReplStatus
                 SetUserDomainControllerButton.ForeColor = Color.White;
             }
 
-            SetUserDomainControllerTextBox.Text = ADReplStatusForm.gUseUserDomainController
-                ? ADReplStatusForm.gUserDomainController
+            SetUserDomainControllerTextBox.Text = state.UseUserDomainController
+                ? state.UserDomainController
                 : string.Empty;
         }
 

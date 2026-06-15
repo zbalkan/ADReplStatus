@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -15,22 +15,19 @@ namespace ADReplStatus
         {
             if (UsernameTextBox.Text.Length > 0 && PasswordTextBox.Text.Length > 0)
             {
-                ADReplStatusForm.gUsername = UsernameTextBox.Text;
-
-                ADReplStatusForm.gPassword = PasswordTextBox.Text;
+                var state = AppState.Instance;
+                state.Username = UsernameTextBox.Text;
+                state.Password = PasswordTextBox.Text;
 
                 Dispose();
 
-                if (ADReplStatusForm.gLoggingEnabled)
-                {
-                    System.IO.File.AppendAllText(ADReplStatusForm.gLogfileName, $"[{DateTime.Now}] Using alternate identity: {ADReplStatusForm.gUsername}\n");
-                }
+                Logger.Log($"Using alternate identity: {state.Username}");
             }
         }
 
         private void AlternateCredsForm_Load(object sender, EventArgs e)
         {
-            if (ADReplStatusForm.gDarkMode)
+            if (AppState.Instance.DarkMode)
             {
                 BackColor = Color.FromArgb(32, 32, 32);
 
@@ -40,19 +37,16 @@ namespace ADReplStatus
                     {
                         case Label _:
                             ((Label)control).BackColor = Color.FromArgb(32, 32, 32);
-
                             ((Label)control).ForeColor = Color.White;
                             break;
 
                         case TextBox _:
                             ((TextBox)control).BackColor = Color.FromArgb(32, 32, 32);
-
                             ((TextBox)control).ForeColor = Color.White;
                             break;
 
                         case Button _:
                             ((Button)control).BackColor = Color.FromArgb(32, 32, 32);
-
                             ((Button)control).ForeColor = Color.White;
                             break;
                     }
