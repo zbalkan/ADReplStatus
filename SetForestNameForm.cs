@@ -1,12 +1,7 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 using System.Windows.Forms;
 
 namespace ADReplStatus
@@ -20,9 +15,9 @@ namespace ADReplStatus
 
         private void SetForestNameForm_Load(object sender, EventArgs e)
         {
-            if (ADReplStatusForm.gDarkMode == true)
+            if (ADReplStatusForm.gDarkMode)
             {
-                this.BackColor = Color.FromArgb(32, 32, 32);
+                BackColor = Color.FromArgb(32, 32, 32);
 
                 EnterForestNameLabel.BackColor = Color.FromArgb(32, 32, 32);
 
@@ -49,7 +44,7 @@ namespace ADReplStatus
                 if (SaveForestCheckBox.Checked)
                 {
                     try
-                    {                        
+                    {
                         var key = Registry.CurrentUser.CreateSubKey("SOFTWARE\\ADREPLSTATUS", true);
 
                         if (key != null)
@@ -57,9 +52,9 @@ namespace ADReplStatus
                             key.SetValue("ForestName", SetForestNameTextBox.Text);
 
                             key.Dispose();
-                        }                        
+                        }
                     }
-                    catch (Exception ex) 
+                    catch (Exception ex)
                     {
                         string errorMessage = $"ERROR: Failed to write to the HKCU\\ADREPLSTATUS registry key!\n{ex.Message}\n";
 
@@ -67,17 +62,17 @@ namespace ADReplStatus
 
                         if (ADReplStatusForm.gLoggingEnabled)
                         {
-                            System.IO.File.AppendAllText(ADReplStatusForm.gLogfileName, $"[{DateTime.Now}] {errorMessage}\n");
+                            File.AppendAllText(ADReplStatusForm.gLogfileName, $"[{DateTime.Now}] {errorMessage}\n");
                         }
                     }
-                }                
+                }
 
                 if (ADReplStatusForm.gLoggingEnabled)
                 {
-                    System.IO.File.AppendAllText(ADReplStatusForm.gLogfileName, $"[{DateTime.Now}] Forest name set to: {ADReplStatusForm.gForestName}\n");
-                }                
+                    File.AppendAllText(ADReplStatusForm.gLogfileName, $"[{DateTime.Now}] Forest name set to: {ADReplStatusForm.gForestName}\n");
+                }
 
-                this.Dispose();
+                Dispose();
             }
         }
     }

@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ADReplStatus
@@ -42,7 +36,7 @@ namespace ADReplStatus
                     ADReplStatusForm.gUserDomainController = SetUserDomainControllerTextBox.Text;
                 }
 
-                this.Close();
+                Close();
                 return;
             }
 
@@ -59,14 +53,14 @@ namespace ADReplStatus
             ADReplStatusForm.gUseUserDomainController = true;
             ADReplStatusForm.gUserDomainController = SetUserDomainControllerTextBox.Text;
 
-            this.Close();
+            Close();
         }
 
         private void SetUserDomainControllerForm_Load(object sender, EventArgs e)
         {
             if (ADReplStatusForm.gDarkMode)
             {
-                this.BackColor = Color.FromArgb(32, 32, 32);
+                BackColor = Color.FromArgb(32, 32, 32);
 
                 SetUserDomainControllerLabel.BackColor = Color.FromArgb(32, 32, 32);
                 SetUserDomainControllerLabel.ForeColor = Color.White;

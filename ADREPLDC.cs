@@ -19,5 +19,4 @@ namespace ADReplStatus
 
         public List<ReplicationNeighbor> ReplicationPartners = new List<ReplicationNeighbor>();
     }
-
 }

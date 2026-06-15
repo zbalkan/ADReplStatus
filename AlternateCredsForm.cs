@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ADReplStatus
@@ -25,7 +19,7 @@ namespace ADReplStatus
 
                 ADReplStatusForm.gPassword = PasswordTextBox.Text;
 
-                this.Dispose();
+                Dispose();
 
                 if (ADReplStatusForm.gLoggingEnabled)
                 {
@@ -36,29 +30,31 @@ namespace ADReplStatus
 
         private void AlternateCredsForm_Load(object sender, EventArgs e)
         {
-            if (ADReplStatusForm.gDarkMode == true)
+            if (ADReplStatusForm.gDarkMode)
             {
-                this.BackColor = Color.FromArgb(32, 32, 32);
+                BackColor = Color.FromArgb(32, 32, 32);
 
-                foreach (var control in this.Controls)
+                foreach (var control in Controls)
                 {
-                    if (control is Label)
+                    switch (control)
                     {
-                        ((Label)control).BackColor = Color.FromArgb(32, 32, 32);
+                        case Label _:
+                            ((Label)control).BackColor = Color.FromArgb(32, 32, 32);
 
-                        ((Label)control).ForeColor = Color.White;
-                    }
-                    else if (control is TextBox)
-                    {
-                        ((TextBox)control).BackColor = Color.FromArgb(32, 32, 32);
+                            ((Label)control).ForeColor = Color.White;
+                            break;
 
-                        ((TextBox)control).ForeColor = Color.White;
-                    }
-                    else if (control is Button)
-                    {
-                        ((Button)control).BackColor = Color.FromArgb(32, 32, 32);
+                        case TextBox _:
+                            ((TextBox)control).BackColor = Color.FromArgb(32, 32, 32);
 
-                        ((Button)control).ForeColor = Color.White;
+                            ((TextBox)control).ForeColor = Color.White;
+                            break;
+
+                        case Button _:
+                            ((Button)control).BackColor = Color.FromArgb(32, 32, 32);
+
+                            ((Button)control).ForeColor = Color.White;
+                            break;
                     }
                 }
             }
