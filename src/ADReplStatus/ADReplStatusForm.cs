@@ -636,5 +636,15 @@ namespace ADReplStatus
         {
             _worker.ReportProgress(percent, message);
         }
+
+        public bool AskFallbackToAutomaticDiscovery(string dcName)
+        {
+            var result = MessageBox.Show(
+                $"The specified domain controller '{dcName}' is not accessible.\n\nWould you like to fall back to automatic forest discovery?",
+                "Domain Controller Unavailable",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+            return result == DialogResult.Yes;
+        }
     }
 }

@@ -13,6 +13,7 @@ namespace ADReplStatus
     public interface IProgressReporter
     {
         void ReportProgress(int percent, string message);
+        bool AskFallbackToAutomaticDiscovery(string dcName);
     }
 
     public class ReplicationService
@@ -42,8 +43,35 @@ namespace ADReplStatus
                         dcContext = new DirectoryContext(DirectoryContextType.DirectoryServer, state.UserDomainController);
                     }
 
-                    DomainController domainController = DomainController.GetDomainController(dcContext);
-                    forest = domainController.Forest;
+                    try
+                    {
+                        DomainController domainController = DomainController.GetDomainController(dcContext);
+                        forest = domainController.Forest;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log($"Failed to connect to specified DC {state.UserDomainController}: {ex.Message}");
+                        if (reporter.AskFallbackToAutomaticDiscovery(state.UserDomainController))
+                        {
+                            Logger.Log("User chose to fall back to automatic forest discovery");
+                            DirectoryContext forestContext;
+                            if (state.Username.Length > 0)
+                            {
+                                reporter.ReportProgress(0, $"Attempting to connect to forest {state.ForestName} with alternate user {state.Username}.");
+                                forestContext = new DirectoryContext(DirectoryContextType.Forest, state.ForestName, state.Username, state.Password);
+                            }
+                            else
+                            {
+                                reporter.ReportProgress(0, $"Attempting to connect to forest {state.ForestName} as currently logged-on user.");
+                                forestContext = new DirectoryContext(DirectoryContextType.Forest, state.ForestName);
+                            }
+                            forest = Forest.GetForest(forestContext);
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
                 }
                 else
                 {
