@@ -1,24 +1,21 @@
-﻿using System;
+﻿using BrightIdeasSoftware;
+using Microsoft.Win32;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.DirectoryServices;
 using System.DirectoryServices.ActiveDirectory;
-using Microsoft.Win32;
-using BrightIdeasSoftware;
-
-using System.Net.NetworkInformation;
-using System.IO;
-using System.Reflection;
-using System.Threading;
-using System.Net.Sockets;
+using System.Drawing;
+using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace ADReplStatus
 {
@@ -207,8 +204,6 @@ namespace ADReplStatus
 
             backgroundWorker1.ReportProgress(0, $"Found {domainCollection.Count} domains in forest {forest.Name}.");
 
-            int CurrentDC = 0;
-
             int NumDCs = 0;
 
             foreach (Domain domain in domainCollection)
@@ -216,17 +211,21 @@ namespace ADReplStatus
                 NumDCs += domain.DomainControllers.Count;
             }
 
+            var results = new ConcurrentBag<ADREPLDC>();
+            int completedDCs = 0;
+
             foreach (Domain domain in domainCollection)
             {
-                DomainControllerCollection DCs = domain.DomainControllers;
+                var dcList = domain.DomainControllers.Cast<DomainController>().ToList();
+                string domainName = domain.Name;
 
-                foreach (DomainController dc in DCs)
+                Parallel.ForEach(dcList, dc =>
                 {
                     ADREPLDC adrepldc = new ADREPLDC();
 
                     adrepldc.Name = dc.Name;
 
-                    adrepldc.DomainName = domain.Name;
+                    adrepldc.DomainName = domainName;
 
                     try
                     {
@@ -234,7 +233,7 @@ namespace ADReplStatus
                     }
                     catch (Exception ex)
                     {
-                        backgroundWorker1.ReportProgress((int)(((float)CurrentDC / (float)NumDCs) * 100), $"Failed to contact DC {adrepldc.Name} and fetch site name:{ex.Message}");
+                        backgroundWorker1.ReportProgress(0, $"Failed to contact DC {adrepldc.Name} and fetch site name:{ex.Message}");
 
                         adrepldc.Site = "Unknown";
 
@@ -247,7 +246,7 @@ namespace ADReplStatus
                     }
                     catch (Exception ex)
                     {
-                        backgroundWorker1.ReportProgress((int)(((float)CurrentDC / (float)NumDCs) * 100), $"Failed to contact DC {adrepldc.Name} and determine global catalog status:{ex.Message}");
+                        backgroundWorker1.ReportProgress(0, $"Failed to contact DC {adrepldc.Name} and determine global catalog status:{ex.Message}");
 
                         adrepldc.IsGC = "Unknown";
 
@@ -286,7 +285,7 @@ namespace ADReplStatus
                     }
                     catch (Exception ex)
                     {
-                        backgroundWorker1.ReportProgress((int)(((float)CurrentDC / (float)NumDCs) * 100), $"Failed to determine RODC status for {dc.Name}:{ex.Message}");
+                        backgroundWorker1.ReportProgress(0, $"Failed to determine RODC status for {dc.Name}:{ex.Message}");
 
                         adrepldc.IsRODC = "Unknown";
 
@@ -304,22 +303,21 @@ namespace ADReplStatus
                         }
                         catch (Exception ex)
                         {
-                            backgroundWorker1.ReportProgress((int)(((float)CurrentDC / (float)NumDCs) * 100), $"Failed to determine replication neighbors and repl status for {dc.Name}:{ex.Message}");
+                            backgroundWorker1.ReportProgress(0, $"Failed to determine replication neighbors and repl status for {dc.Name}:{ex.Message}");
 
                             adrepldc.DiscoveryIssues = true;
                         }
                     }
 
-                    gDCs.Add(adrepldc);
+                    results.Add(adrepldc);
 
-                    CurrentDC++;
-
-                    backgroundWorker1.ReportProgress((int)(((float)CurrentDC / (float)NumDCs) * 100), "UPDATEPERCENT");
-                }
+                    int done = Interlocked.Increment(ref completedDCs);
+                    int percent = (int)(((float)done / (float)NumDCs) * 100);
+                    backgroundWorker1.ReportProgress(percent, "UPDATEPERCENT");
+                });
             }
 
-
-
+            gDCs = results.ToList();
         }
 
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
