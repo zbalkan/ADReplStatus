@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ADReplStatus
@@ -12,7 +9,7 @@ namespace ADReplStatus
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        private static void Main()
         {
             if (!System.IO.File.Exists("ObjectListView.dll"))
             {
